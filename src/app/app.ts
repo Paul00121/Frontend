@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, computed } from '@angular/core';
+import { Component, signal, inject, OnInit, OnDestroy, computed, NgZone, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReporteService, Reporte } from './services/reporte.service';
@@ -45,8 +45,10 @@ interface Translations {
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   private reporteService = inject(ReporteService);
+  private ngZone = inject(NgZone);
+  private destroyRef = inject(DestroyRef);
 
   reportes = signal<Reporte[]>([]);
 
@@ -56,6 +58,7 @@ export class App implements OnInit {
 
   cargando = signal(false);
   mensaje = signal('');
+  mensajeAlerta = signal<string | null>(null);
 
   // Módulos: dashboard | reportes | configuracion
   moduloActivo = signal<'dashboard' | 'reportes' | 'configuracion'>('dashboard');
@@ -205,6 +208,40 @@ export class App implements OnInit {
 
   ngOnInit() {
     this.cargarReportes();
+    this.conectarStreamSSE();
+  }
+
+  private conectarStreamSSE() {
+    const sub = this.reporteService.listenToReportStream().subscribe({
+      next: (evento) => {
+        this.ngZone.run(() => {
+          switch (evento.type) {
+            case 'reporte.creado':
+              this.reportes.update((lista) => [evento.data, ...lista]);
+              break;
+            case 'reporte.actualizado':
+              this.reportes.update((lista) =>
+                lista.map((r) => (r.id === evento.data.id ? { ...r, ...evento.data } : r))
+              );
+              break;
+            case 'reporte.eliminado':
+              this.reportes.update((lista) =>
+                lista.filter((r) => r.id !== evento.data.id)
+              );
+              break;
+          }
+        });
+      },
+      error: () => {
+        console.warn('[SSE] Error en el stream — reintentará automáticamente');
+      }
+    });
+
+    this.destroyRef.onDestroy(() => sub.unsubscribe());
+  }
+
+  ngOnDestroy() {
+    // destroyRef se encarga del cleanup del subscription
   }
 
   cargarReportes() {
@@ -216,7 +253,7 @@ export class App implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar:', err);
-        this.mensaje.set('Error al conectar con el servidor');
+        this.manejarErrorHttp(err, 'cargar reportes');
         this.cargando.set(false);
       }
     });
@@ -246,7 +283,7 @@ export class App implements OnInit {
         setTimeout(() => this.mensaje.set(''), 3000);
       },
       error: (err) => {
-        this.mensaje.set('❌ Error al crear reporte');
+        this.manejarErrorHttp(err, 'crear reporte');
         console.error(err);
       }
     });
@@ -260,7 +297,7 @@ export class App implements OnInit {
         setTimeout(() => this.mensaje.set(''), 2000);
       },
       error: (err) => {
-        this.mensaje.set('❌ Error al actualizar estado');
+        this.manejarErrorHttp(err, 'actualizar estado');
         console.error(err);
       }
     });
@@ -276,10 +313,20 @@ export class App implements OnInit {
         setTimeout(() => this.mensaje.set(''), 2000);
       },
       error: (err) => {
-        this.mensaje.set('❌ Error al eliminar');
+        this.manejarErrorHttp(err, 'eliminar reporte');
         console.error(err);
       }
     });
+  }
+
+  private manejarErrorHttp(err: any, contexto: string): void {
+    if (err.status === 429) {
+      const msg = err.error?.mensaje || '¡Alerta de Autoataque! Demasiadas peticiones. Inténtalo más tarde.';
+      this.mensajeAlerta.set(msg);
+      setTimeout(() => this.mensajeAlerta.set(null), 4000);
+    } else {
+      this.mensaje.set(`❌ Error al ${contexto}`);
+    }
   }
 
   getBadgeClass(estado: string): string {
@@ -357,7 +404,7 @@ export class App implements OnInit {
         setTimeout(() => this.mensaje.set(''), 3000);
       },
       error: (err) => {
-        this.mensaje.set('❌ Error al actualizar reporte');
+        this.manejarErrorHttp(err, 'actualizar reporte');
         console.error(err);
       }
     });
