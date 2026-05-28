@@ -2,6 +2,10 @@ import { Component, signal, inject, OnInit, OnDestroy, computed, NgZone, Destroy
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReporteService, Reporte } from './services/reporte.service';
+import { AuthService } from './services/auth.service';
+import { SocketService } from './services/socket.service';
+import { AdminUsuariosComponent } from './admin-usuarios/admin-usuarios.component';
+import { MonitoreoSocketsComponent } from './monitoreo-sockets/monitoreo-sockets.component';
 
 interface Translations {
   [key: string]: {
@@ -36,17 +40,40 @@ interface Translations {
     editarReporte: string;
     estado: string;
     guardarCambios: string;
+    iniciarSesion: string;
+    registrarse: string;
+    cerrarSesion: string;
+    perfil: string;
+    email: string;
+    contrasena: string;
+    nombre: string;
+    actualizar: string;
+    adminPanel: string;
+    buscarUsuarios: string;
+    sinUsuarios: string;
+    reportadoPor: string;
+    authError: string;
+    adminOnly: string;
+    crearUsuario: string;
+    editarUsuario: string;
+    rol: string;
+    guardar: string;
+    eliminar: string;
+    confirmarEliminar: string;
+    sinPassword: string;
   };
 }
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminUsuariosComponent, MonitoreoSocketsComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit, OnDestroy {
   private reporteService = inject(ReporteService);
+  private authService = inject(AuthService);
+  private socketService = inject(SocketService);
   private ngZone = inject(NgZone);
   private destroyRef = inject(DestroyRef);
 
@@ -60,23 +87,38 @@ export class App implements OnInit, OnDestroy {
   mensaje = signal('');
   mensajeAlerta = signal<string | null>(null);
 
-  // Módulos: dashboard | reportes | configuracion
-  moduloActivo = signal<'dashboard' | 'reportes' | 'configuracion'>('dashboard');
+  moduloActivo = signal<'dashboard' | 'reportes' | 'configuracion' | 'admin-usuarios' | 'monitoreo-sockets'>('dashboard');
   mostrarModal = signal(false);
 
-  // Edición de reportes
   reporteSeleccionado = signal<Reporte | null>(null);
   estadoSeleccionado = signal<string>('Pendiente');
 
-  // Configuración
   darkMode = signal(true);
   idioma = signal<'es' | 'en' | 'pt'>('es');
   notificaciones = signal(true);
 
-  // Búsqueda en tiempo real
   busqueda = signal('');
 
-  // Diccionario de traducciones
+  // Auth
+  authFormType = signal<'login' | 'register'>('login');
+  loginEmail = signal('');
+  loginPassword = signal('');
+  registerNombre = signal('');
+  registerEmail = signal('');
+  registerPassword = signal('');
+  authLoading = signal(false);
+  authError = signal('');
+
+  readonly isAuthenticated = this.authService.isAuthenticated;
+  readonly usuario = this.authService.usuario;
+  readonly isAdmin = this.authService.isAdmin;
+
+  // Perfil
+  perfilNombre = signal('');
+  perfilEmail = signal('');
+  perfilLoading = signal(false);
+  perfilMensaje = signal('');
+
   private translations: Translations = {
     es: {
       dashboard: 'Panel de Control',
@@ -109,7 +151,28 @@ export class App implements OnInit, OnDestroy {
       infoSistema: 'Información del Sistema',
       editarReporte: 'Editar Reporte',
       estado: 'Estado',
-      guardarCambios: 'Guardar Cambios'
+      guardarCambios: 'Guardar Cambios',
+      iniciarSesion: 'Iniciar Sesión',
+      registrarse: 'Registrarse',
+      cerrarSesion: 'Cerrar Sesión',
+      perfil: 'Perfil',
+      email: 'Correo Electrónico',
+      contrasena: 'Contraseña',
+      nombre: 'Nombre Completo',
+      actualizar: 'Actualizar',
+      adminPanel: 'Panel de Administración',
+      buscarUsuarios: 'Buscar usuarios por nombre o email...',
+      sinUsuarios: 'No se encontraron usuarios',
+      reportadoPor: 'Reportado por',
+      authError: 'Error de autenticación',
+      adminOnly: 'Solo administradores',
+      crearUsuario: 'Crear Usuario',
+      editarUsuario: 'Editar Usuario',
+      rol: 'Rol',
+      guardar: 'Guardar',
+      eliminar: 'Eliminar',
+      confirmarEliminar: '¿Estás seguro de eliminar este usuario? Los reportes que creó quedarán sin dueño.',
+      sinPassword: 'Dejar vacío para mantener la actual'
     },
     en: {
       dashboard: 'Dashboard',
@@ -137,12 +200,33 @@ export class App implements OnInit, OnDestroy {
       studySync: 'StudySync',
       infraestructura: 'Infrastructure',
       version: 'Version',
-      idiomaLabel: 'Select the application language',
+      idiomaLabel: 'Select application language',
       notificacionesLabel: 'Receive alerts about new reports',
       infoSistema: 'System Information',
       editarReporte: 'Edit Report',
       estado: 'State',
-      guardarCambios: 'Save Changes'
+      guardarCambios: 'Save Changes',
+      iniciarSesion: 'Sign In',
+      registrarse: 'Sign Up',
+      cerrarSesion: 'Sign Out',
+      perfil: 'Profile',
+      email: 'Email',
+      contrasena: 'Password',
+      nombre: 'Full Name',
+      actualizar: 'Update',
+      adminPanel: 'Admin Panel',
+      buscarUsuarios: 'Search users by name or email...',
+      sinUsuarios: 'No users found',
+      reportadoPor: 'Reported by',
+      authError: 'Authentication error',
+      adminOnly: 'Administrators only',
+      crearUsuario: 'Create User',
+      editarUsuario: 'Edit User',
+      rol: 'Role',
+      guardar: 'Save',
+      eliminar: 'Delete',
+      confirmarEliminar: 'Are you sure you want to delete this user? Their reports will become ownerless.',
+      sinPassword: 'Leave empty to keep current'
     },
     pt: {
       dashboard: 'Painel',
@@ -175,12 +259,32 @@ export class App implements OnInit, OnDestroy {
       infoSistema: 'Informações do Sistema',
       editarReporte: 'Editar Relatório',
       estado: 'Estado',
-      guardarCambios: 'Salvar Alterações'
+      guardarCambios: 'Salvar Alterações',
+      iniciarSesion: 'Entrar',
+      registrarse: 'Cadastrar',
+      cerrarSesion: 'Sair',
+      perfil: 'Perfil',
+      email: 'E-mail',
+      contrasena: 'Senha',
+      nombre: 'Nome Completo',
+      actualizar: 'Atualizar',
+      adminPanel: 'Painel de Administração',
+      buscarUsuarios: 'Buscar usuários por nome ou e-mail...',
+      sinUsuarios: 'Nenhum usuário encontrado',
+      reportadoPor: 'Reportado por',
+      authError: 'Erro de autenticação',
+      adminOnly: 'Apenas administradores',
+      crearUsuario: 'Criar Usuário',
+      editarUsuario: 'Editar Usuário',
+      rol: 'Função',
+      guardar: 'Salvar',
+      eliminar: 'Excluir',
+      confirmarEliminar: 'Tem certeza que deseja excluir este usuário? Os relatórios dele ficarão sem dono.',
+      sinPassword: 'Deixe vazio para manter a atual'
     }
   };
 
-  // Método para obtener traducción
-  t(key: keyof Translations['es']): string {
+  t = (key: keyof Translations['es']): string => {
     return this.translations[this.idioma()][key] || key;
   }
 
@@ -196,7 +300,6 @@ export class App implements OnInit, OnDestroy {
     return this.reportes().filter(r => r.estado === 'Solucionado').length;
   }
 
-  // Computed para reportes filtrados por búsqueda
   reportesFiltrados = computed(() => {
     const search = this.busqueda().toLowerCase().trim();
     if (!search) return this.reportes();
@@ -207,41 +310,135 @@ export class App implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.cargarReportes();
-    this.conectarStreamSSE();
+    if (this.isAuthenticated()) {
+      this.cargarReportes();
+      this.conectarSocket();
+      this.iniciarPerfil();
+    }
   }
 
-  private conectarStreamSSE() {
-    const sub = this.reporteService.listenToReportStream().subscribe({
-      next: (evento) => {
-        this.ngZone.run(() => {
-          switch (evento.type) {
-            case 'reporte.creado':
-              this.reportes.update((lista) => [evento.data, ...lista]);
-              break;
-            case 'reporte.actualizado':
-              this.reportes.update((lista) =>
-                lista.map((r) => (r.id === evento.data.id ? { ...r, ...evento.data } : r))
-              );
-              break;
-            case 'reporte.eliminado':
-              this.reportes.update((lista) =>
-                lista.filter((r) => r.id !== evento.data.id)
-              );
-              break;
-          }
-        });
-      },
-      error: () => {
-        console.warn('[SSE] Error en el stream — reintentará automáticamente');
-      }
+  private iniciarPerfil() {
+    const u = this.usuario();
+    if (u) {
+      this.perfilNombre.set(u.nombre);
+      this.perfilEmail.set(u.email);
+    }
+  }
+
+  private conectarSocket() {
+    if (!this.isAuthenticated()) return;
+    const socket = this.socketService.connect();
+
+    socket.on('reporte.creado', (data: any) => {
+      this.ngZone.run(() => this.reportes.update((lista) => [data, ...lista]));
     });
 
-    this.destroyRef.onDestroy(() => sub.unsubscribe());
+    socket.on('reporte.actualizado', (data: any) => {
+      this.ngZone.run(() =>
+        this.reportes.update((lista) =>
+          lista.map((r) => (r.id === data.id ? { ...r, ...data } : r))
+        )
+      );
+    });
+
+    socket.on('reporte.eliminado', (data: any) => {
+      this.ngZone.run(() =>
+        this.reportes.update((lista) =>
+          lista.filter((r) => r.id !== data.id)
+        )
+      );
+    });
+
+    this.destroyRef.onDestroy(() => this.socketService.disconnect());
   }
 
   ngOnDestroy() {
-    // destroyRef se encarga del cleanup del subscription
+  }
+
+  login() {
+    const email = this.loginEmail().trim();
+    const password = this.loginPassword().trim();
+
+    if (!email || !password) {
+      this.authError.set('Email y contraseña son obligatorios');
+      return;
+    }
+
+    this.authLoading.set(true);
+    this.authError.set('');
+
+    this.authService.login({ email, password }).subscribe({
+      next: () => {
+        this.authLoading.set(false);
+        this.cargarReportes();
+        this.conectarSocket();
+        this.iniciarPerfil();
+      },
+      error: (err) => {
+        this.authLoading.set(false);
+        this.authError.set(err.error?.error || 'Error al iniciar sesión');
+      }
+    });
+  }
+
+  register() {
+    const nombre = this.registerNombre().trim();
+    const email = this.registerEmail().trim();
+    const password = this.registerPassword().trim();
+
+    if (!nombre || !email || !password) {
+      this.authError.set('Todos los campos son obligatorios');
+      return;
+    }
+
+    this.authLoading.set(true);
+    this.authError.set('');
+
+    this.authService.register({ nombre, email, password }).subscribe({
+      next: () => {
+        this.authLoading.set(false);
+        this.cargarReportes();
+        this.conectarSocket();
+        this.iniciarPerfil();
+      },
+      error: (err) => {
+        this.authLoading.set(false);
+        this.authError.set(err.error?.error || 'Error al registrarse');
+      }
+    });
+  }
+
+  logout() {
+    this.authService.logout();
+    this.reportes.set([]);
+    this.moduloActivo.set('dashboard');
+  }
+
+  updatePerfil() {
+    const data: any = {};
+    if (this.perfilNombre().trim()) data.nombre = this.perfilNombre().trim();
+    if (this.perfilEmail().trim()) data.email = this.perfilEmail().trim();
+
+    this.perfilLoading.set(true);
+    this.perfilMensaje.set('');
+
+    this.authService.updatePerfil(data).subscribe({
+      next: () => {
+        this.perfilLoading.set(false);
+        this.perfilMensaje.set('✅ Perfil actualizado');
+        setTimeout(() => this.perfilMensaje.set(''), 3000);
+      },
+      error: (err) => {
+        this.perfilLoading.set(false);
+        this.perfilMensaje.set('❌ ' + (err.error?.error || 'Error al actualizar'));
+        setTimeout(() => this.perfilMensaje.set(''), 3000);
+      }
+    });
+  }
+
+  cambiarAuthForm(tipo: 'login' | 'register') {
+    this.authFormType.set(tipo);
+    this.authError.set('');
   }
 
   cargarReportes() {
@@ -303,7 +500,7 @@ export class App implements OnInit, OnDestroy {
     });
   }
 
-  eliminarReporte(id: number) {
+  eliminarReporte(id: string) {
     if (!confirm('¿Estás seguro de eliminar este reporte?')) return;
 
     this.reporteService.delete(id).subscribe({
@@ -346,8 +543,11 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  cambiarModulo(modulo: 'dashboard' | 'reportes' | 'configuracion') {
+  cambiarModulo(modulo: 'dashboard' | 'reportes' | 'configuracion' | 'admin-usuarios' | 'monitoreo-sockets') {
     this.moduloActivo.set(modulo);
+    if (modulo === 'configuracion') {
+      this.iniciarPerfil();
+    }
   }
 
   abrirModal() {

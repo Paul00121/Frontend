@@ -1,592 +1,764 @@
-<!-- Contenedor principal con modo oscuro/claro GLOBAL -->
-<div
-  class="min-h-screen flex transition-colors duration-300"
-  [ngClass]="darkMode() ? 'bg-[#0f172a] text-slate-100' : 'bg-slate-50 text-slate-800'"
->
-  <!-- SIDEBAR FIJO -->
-  <aside
-    class="h-screen sticky top-0 w-64 flex flex-col transition-colors duration-300 border-r"
-    [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+@if (!isAuthenticated()) {
+  <!-- LOGIN / REGISTER -->
+  <div
+    class="min-h-screen flex items-center justify-center transition-colors duration-300"
+    [class.bg-[#0f172a]]="darkMode()"
+    [class.bg-slate-50]="!darkMode()"
   >
-    <!-- Panel Superior - Logo -->
     <div
-      class="p-6 border-b transition-colors duration-300"
-      [ngClass]="darkMode() ? 'border-slate-800' : 'border-slate-200'"
+      class="w-full max-w-md p-8 rounded-2xl shadow-2xl border transition-colors duration-300"
+      [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
     >
-      <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
-        {{ t('studySync') }}
-      </h1>
-      <p class="text-sm mt-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('infraestructura') }}</p>
-    </div>
-
-    <!-- Menú de Navegación -->
-    <nav class="flex-1 p-4 space-y-2">
-      <!-- Dashboard -->
-      <button
-        (click)="cambiarModulo('dashboard')"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
-        [ngClass]="moduloActivo() === 'dashboard' ? 'bg-violet-600 text-white' : (
-          darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200'
-        )"
-      >
-        <span class="text-lg">📊</span>
-        <span>{{ t('dashboard') }}</span>
-      </button>
-
-      <!-- Reportes -->
-      <button
-        (click)="cambiarModulo('reportes')"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
-        [ngClass]="moduloActivo() === 'reportes' ? 'bg-violet-600 text-white' : (
-          darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200'
-        )"
-      >
-        <span class="text-lg">📋</span>
-        <span>{{ t('reportes') }}</span>
-      </button>
-
-      <!-- Configuración -->
-      <button
-        (click)="cambiarModulo('configuracion')"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
-        [ngClass]="moduloActivo() === 'configuracion' ? 'bg-violet-600 text-white' : (
-          darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200'
-        )"
-      >
-        <span class="text-lg">⚙️</span>
-        <span>{{ t('configuracion') }}</span>
-      </button>
-
-      <!-- Módulos Futuros -->
-      <div
-        class="pt-4 mt-4 border-t transition-colors duration-300"
-        [ngClass]="darkMode() ? 'border-slate-800' : 'border-slate-200'"
-      >
-        <p class="text-xs px-4 mb-2" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">PRÓXIMAMENTE</p>
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+          StudySync
+        </h1>
+        <p class="text-sm mt-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('infraestructura') }}</p>
       </div>
 
-      <div class="flex items-center gap-3 px-4 py-3 opacity-40 cursor-not-allowed rounded-lg">
-        <span class="text-lg">👥</span>
-        <span [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">Grupos de Estudio</span>
-      </div>
-
-      <div class="flex items-center gap-3 px-4 py-3 opacity-40 cursor-not-allowed rounded-lg">
-        <span class="text-lg">📅</span>
-        <span [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">Sesiones</span>
-      </div>
-
-      <div class="flex items-center gap-3 px-4 py-3 opacity-40 cursor-not-allowed rounded-lg">
-        <span class="text-lg">📚</span>
-        <span [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">Recursos</span>
-      </div>
-
-      <div class="flex items-center gap-3 px-4 py-3 opacity-40 cursor-not-allowed rounded-lg">
-        <span class="text-lg">👤</span>
-        <span [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">Usuarios</span>
-      </div>
-    </nav>
-
-    <!-- Footer del Sidebar -->
-    <div
-      class="p-4 border-t transition-colors duration-300"
-      [ngClass]="darkMode() ? 'border-slate-800' : 'border-slate-200'"
-    >
-      <p class="text-xs text-center" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">{{ t('version') }} 1.0.0 - Programación IV</p>
-    </div>
-  </aside>
-
-  <!-- CONTENEDOR DERECHO CON SCROLL CORREGIDO -->
-  <div class="flex-1 min-w-0 p-8 overflow-y-auto h-screen">
-    <!-- Header Superior -->
-    <header
-      class="p-4 flex justify-between items-center sticky top-0 z-10 mb-6 transition-colors duration-300 rounded-xl"
-      [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
-      [class.border-b]="true"
-    >
-      <h2 class="text-xl font-semibold">
-        @switch (moduloActivo()) {
-          @case ('dashboard') { {{ t('dashboard') }} }
-          @case ('reportes') { {{ t('reportes') }} }
-          @case ('configuracion') { {{ t('configuracion') }} }
-        }
-      </h2>
-      <div class="flex items-center gap-3">
-        <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'" class="text-sm">{{ t('admin') }}</span>
-        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold">
-          AD
-        </div>
-      </div>
-    </header>
-
-    <!-- Área de Trabajo -->
-    <main class="space-y-6">
-      @if (mensajeAlerta()) {
-        <div
-          class="p-4 bg-red-900/70 border-2 border-red-500 rounded-lg text-center text-red-200 font-bold shadow-lg animate-pulse"
-          role="alert"
+      <!-- Tabs -->
+      <div class="flex mb-6 rounded-xl p-1 transition-colors duration-300" [class]="darkMode() ? 'bg-slate-800' : 'bg-slate-100'">
+        <button
+          (click)="cambiarAuthForm('login')"
+          class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+          [class]="authFormType() === 'login' ? 'bg-violet-600 text-white shadow-md' : (darkMode() ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900')"
         >
-          <span class="text-xl mr-2">🚨</span>
-          {{ mensajeAlerta() }}
-        </div>
-      }
-
-      @if (mensaje()) {
-        <div class="p-4 bg-blue-900/50 border border-blue-700 rounded-lg text-center text-blue-200">
-          {{ mensaje() }}
-        </div>
-      }
-
-      <!-- ==================== DASHBOARD ==================== -->
-      @if (moduloActivo() === 'dashboard') {
-        <!-- Panel de Control -->
-        <div
-          class="rounded-2xl p-6 border transition-colors duration-300"
-          [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+          {{ t('iniciarSesion') }}
+        </button>
+        <button
+          (click)="cambiarAuthForm('register')"
+          class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
+          [class]="authFormType() === 'register' ? 'bg-violet-600 text-white shadow-md' : (darkMode() ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900')"
         >
-          <h3
-            class="text-lg font-semibold mb-5 pb-2 border-b transition-colors duration-300"
-            [ngClass]="darkMode() ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-800'"
-          >
-            {{ t('panelControl') }}
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Pendientes -->
-            <div class="rounded-2xl p-6 text-center shadow-lg bg-gradient-to-br from-pink-600 to-rose-500">
-              <div class="text-5xl font-bold text-white">{{ pendientes }}</div>
-              <div class="text-white/80 text-lg mt-2 font-medium">{{ t('pendientes') }}</div>
-            </div>
-            <!-- En Reparación -->
-            <div class="rounded-2xl p-6 text-center shadow-lg bg-gradient-to-br from-cyan-500 to-blue-500">
-              <div class="text-5xl font-bold text-white">{{ enReparacion }}</div>
-              <div class="text-white/80 text-lg mt-2 font-medium">{{ t('enReparacion') }}</div>
-            </div>
-            <!-- Solucionados -->
-            <div class="rounded-2xl p-6 text-center shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500">
-              <div class="text-5xl font-bold text-white">{{ solucionados }}</div>
-              <div class="text-white/80 text-lg mt-2 font-medium">{{ t('solucionados') }}</div>
-            </div>
-          </div>
-        </div>
+          {{ t('registrarse') }}
+        </button>
+      </div>
 
-        <!-- Gráfico de Barras + Feed de Actividad -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Sección A: Gráfico de Barras -->
-          <div
-            class="rounded-2xl p-6 border transition-colors duration-300"
-            [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
-          >
-            <h4 class="text-lg font-semibold mb-4" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Incidentes por Infraestructura</h4>
-            <div class="space-y-4">
-              <div>
-                <div class="flex justify-between mb-1">
-                  <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Bloque A</span>
-                  <span class="text-sm font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">45%</span>
-                </div>
-                <div class="w-full h-2 rounded-full" [class]="darkMode() ? 'bg-slate-700' : 'bg-slate-200'">
-                  <div class="h-2 bg-violet-500 rounded-full" style="width: 45%"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex justify-between mb-1">
-                  <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Laboratorios</span>
-                  <span class="text-sm font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">35%</span>
-                </div>
-                <div class="w-full h-2 rounded-full" [class]="darkMode() ? 'bg-slate-700' : 'bg-slate-200'">
-                  <div class="h-2 bg-cyan-500 rounded-full" style="width: 35%"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex justify-between mb-1">
-                  <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Áreas Verdes</span>
-                  <span class="text-sm font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">20%</span>
-                </div>
-                <div class="w-full h-2 rounded-full" [class]="darkMode() ? 'bg-slate-700' : 'bg-slate-200'">
-                  <div class="h-2 bg-emerald-500 rounded-full" style="width: 20%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sección B: Feed de Actividad -->
-          <div
-            class="rounded-2xl p-6 border transition-colors duration-300"
-            [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
-          >
-            <h4 class="text-lg font-semibold mb-4" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Actividad Reciente</h4>
-            <div class="space-y-3">
-              <div
-                class="flex items-center gap-3 p-3 rounded-lg transition-colors duration-300"
-                [ngClass]="darkMode() ? 'bg-slate-800' : 'bg-slate-100'"
-              >
-                <span class="text-green-500">●</span>
-                <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Hace 5 min - Nuevo reporte en Aula 204</span>
-              </div>
-              <div
-                class="flex items-center gap-3 p-3 rounded-lg transition-colors duration-300"
-                [ngClass]="darkMode() ? 'bg-slate-800' : 'bg-slate-100'"
-              >
-                <span class="text-blue-500">●</span>
-                <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Hace 1 hora - Estado actualizado ID #2</span>
-              </div>
-              <div
-                class="flex items-center gap-3 p-3 rounded-lg transition-colors duration-300"
-                [ngClass]="darkMode() ? 'bg-slate-800' : 'bg-slate-100'"
-              >
-                <span class="text-amber-500">●</span>
-                <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Hace 2 horas - Reporte solucionado</span>
-              </div>
-              <div
-                class="flex items-center gap-3 p-3 rounded-lg transition-colors duration-300"
-                [ngClass]="darkMode() ? 'bg-slate-800' : 'bg-slate-100'"
-              >
-                <span class="text-purple-500">●</span>
-                <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Ayer - Nuevo reporte en Laboratorio 1</span>
-              </div>
-            </div>
-          </div>
+      <!-- Error -->
+      @if (authError()) {
+        <div class="p-3 mb-4 bg-red-900/60 border border-red-500 rounded-lg text-center text-red-200 text-sm" role="alert">
+          {{ authError() }}
         </div>
       }
 
-      <!-- ==================== REPORTES ==================== -->
-      @if (moduloActivo() === 'reportes') {
-        <!-- Barra de búsqueda y botón -->
-        <div class="flex justify-between items-center gap-4 mb-6">
-          <div class="relative flex-1 max-w-md">
+      <!-- Login Form -->
+      @if (authFormType() === 'login') {
+        <form (ngSubmit)="login()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('email') }}</label>
             <input
-              type="text"
-              [ngModel]="busqueda()"
-              (ngModelChange)="busqueda.set($event)"
-              [placeholder]="t('buscar')"
-              class="w-full px-4 py-3 pl-12 rounded-xl border transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              type="email"
+              [ngModel]="loginEmail()"
+              (ngModelChange)="loginEmail.set($event)"
+              name="loginEmail"
+              placeholder="correo@upds.edu.bo"
+              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              required
             />
-            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400">🔍</span>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('contrasena') }}</label>
+            <input
+              type="password"
+              [ngModel]="loginPassword()"
+              (ngModelChange)="loginPassword.set($event)"
+              name="loginPassword"
+              placeholder="••••••••"
+              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              required
+            />
           </div>
           <button
-            (click)="abrirModal()"
-            class="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+            type="submit"
+            [disabled]="authLoading()"
+            class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
           >
-            <span>➕</span>
-            <span>{{ t('nuevoReporte') }}</span>
-          </button>
-        </div>
-
-        <!-- Tabla con overflow-x-auto -->
-        <div
-          class="rounded-2xl p-6 border transition-colors duration-300"
-          [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
-        >
-          <h3
-            class="text-lg font-semibold mb-5 pb-2 border-b transition-colors duration-300"
-            [ngClass]="darkMode() ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-800'"
-          >
-            {{ t('listaReportes') }}
-          </h3>
-
-          <div class="overflow-x-auto w-full rounded-xl">
-            @if (cargando()) {
-              <div class="text-center py-12" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mx-auto mb-4"></div>
-                <p>{{ t('cargando') }}</p>
-              </div>
-            } @else if (reportesFiltrados().length === 0) {
-              <div class="text-center py-12" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">
-                <svg class="w-16 h-16 mx-auto mb-4" [class]="darkMode() ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <p class="text-lg">{{ t('noReportes') }}</p>
-              </div>
-            } @else {
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="border-b transition-colors duration-300" [ngClass]="darkMode() ? 'border-slate-700' : 'border-slate-200'">
-                    <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">ID</th>
-                    <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('titulo') }}</th>
-                    <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('ubicacion') }}</th>
-                    <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Estado</th>
-                    <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Fecha</th>
-                    <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('acciones') }}</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y transition-colors duration-300" [ngClass]="darkMode() ? 'divide-slate-800' : 'divide-slate-200'">
-                  @for (reporte of reportesFiltrados(); track reporte.id) {
-                    <tr class="transition-colors"
-                        [ngClass]="darkMode() ? 'hover:bg-[#334155]' : 'hover:bg-slate-100'">
-                      <td class="py-4 px-4 font-mono" [class]="darkMode() ? 'text-slate-300' : 'text-slate-700'">#{{ reporte.id }}</td>
-                      <td class="py-4 px-4 font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ reporte.titulo }}</td>
-                      <td class="py-4 px-4" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ reporte.ubicacion }}</td>
-                      <td class="py-4 px-4">
-                        <span
-                          class="px-3 py-1 rounded-full text-xs font-semibold"
-                          [ngClass]="{
-                            'bg-rose-900/50 text-rose-400 border border-rose-700': reporte.estado === 'Pendiente',
-                            'bg-cyan-900/50 text-cyan-400 border border-cyan-700': reporte.estado === 'En Reparación',
-                            'bg-emerald-900/50 text-emerald-400 border border-emerald-700': reporte.estado === 'Solucionado'
-                          }"
-                        >
-                          {{ reporte.estado }}
-                        </span>
-                      </td>
-                      <td class="py-4 px-4" [class]="darkMode() ? 'text-slate-500' : 'text-slate-500'">{{ reporte.fechaCreacion | date:'dd/MM/yyyy' }}</td>
-                      <td class="py-4 px-4">
-                        <div class="flex gap-2">
-                          <button
-                            (click)="abrirModalEdicion(reporte)"
-                            class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all hover:scale-105 shadow-md"
-                            title="Editar"
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            (click)="eliminarReporte(reporte.id)"
-                            class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-all hover:scale-105 shadow-md"
-                            title="Eliminar"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+            @if (authLoading()) {
+              <span class="inline-block animate-spin mr-2">⏳</span>
             }
-          </div>
-        </div>
+            {{ t('iniciarSesion') }}
+          </button>
+        </form>
       }
 
-      <!-- ==================== CONFIGURACIÓN ==================== -->
-      @if (moduloActivo() === 'configuracion') {
-        <div
-          class="rounded-2xl p-6 border transition-colors duration-300"
-          [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
-        >
-          <h3
-            class="text-lg font-semibold mb-6 pb-2 border-b transition-colors duration-300"
-            [ngClass]="darkMode() ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-800'"
+      <!-- Register Form -->
+      @if (authFormType() === 'register') {
+        <form (ngSubmit)="register()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('nombre') }}</label>
+            <input
+              type="text"
+              [ngModel]="registerNombre()"
+              (ngModelChange)="registerNombre.set($event)"
+              name="registerNombre"
+              placeholder="Juan Pérez"
+              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('email') }}</label>
+            <input
+              type="email"
+              [ngModel]="registerEmail()"
+              (ngModelChange)="registerEmail.set($event)"
+              name="registerEmail"
+              placeholder="correo@upds.edu.bo"
+              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('contrasena') }}</label>
+            <input
+              type="password"
+              [ngModel]="registerPassword()"
+              (ngModelChange)="registerPassword.set($event)"
+              name="registerPassword"
+              placeholder="••••••••"
+              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            [disabled]="authLoading()"
+            class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
           >
-            {{ t('configuracion') }}
-          </h3>
-
-          <div class="space-y-6">
-            <!-- Modo Claro/Oscuro -->
-            <div
-              class="flex items-center justify-between p-4 rounded-xl transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#0f172a]' : 'bg-slate-100'"
-            >
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-2xl">
-                  @if (darkMode()) { 🌙 } @else { ☀️ }
-                </div>
-                <div>
-                  <p class="font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('darkMode') }}</p>
-                  <p class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Activa o desactiva el tema oscuro</p>
-                </div>
-              </div>
-              <button
-                (click)="toggleDarkMode()"
-                class="w-14 h-8 rounded-full transition-all duration-300"
-                [ngClass]="darkMode() ? 'bg-violet-600' : 'bg-slate-400'"
-              >
-                <div
-                  class="w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300"
-                  [ngClass]="darkMode() ? 'translate-x-6' : 'translate-x-1'"
-                ></div>
-              </button>
-            </div>
-
-            <!-- Selector de Idioma -->
-            <div
-              class="flex items-center justify-between p-4 rounded-xl transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#0f172a]' : 'bg-slate-100'"
-            >
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-2xl">
-                  🌐
-                </div>
-                <div>
-                  <p class="font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('idioma') }}</p>
-                  <p class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('idiomaLabel') }}</p>
-                </div>
-              </div>
-              <select
-                (change)="cambiarIdioma($event)"
-                [value]="idioma()"
-                class="px-4 py-2 rounded-lg border transition-colors duration-300"
-                [ngClass]="darkMode() ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-800'"
-              >
-                <option value="es">Español</option>
-                <option value="en">English</option>
-                <option value="pt">Português</option>
-              </select>
-            </div>
-
-            <!-- Notificaciones -->
-            <div
-              class="flex items-center justify-between p-4 rounded-xl transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#0f172a]' : 'bg-slate-100'"
-            >
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl">
-                  🔔
-                </div>
-                <div>
-                  <p class="font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('notificaciones') }}</p>
-                  <p class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('notificacionesLabel') }}</p>
-                </div>
-              </div>
-              <button
-                (click)="toggleNotificaciones()"
-                class="w-14 h-8 rounded-full transition-all duration-300"
-                [ngClass]="notificaciones() ? 'bg-violet-600' : 'bg-slate-500'"
-              >
-                <div
-                  class="w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300"
-                  [ngClass]="notificaciones() ? 'translate-x-6' : 'translate-x-1'"
-                ></div>
-              </button>
-            </div>
-
-            <!-- Info del sistema -->
-            <div
-              class="mt-8 p-4 rounded-xl border transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-200'"
-            >
-              <h4 class="font-medium mb-3" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('infoSistema') }}</h4>
-              <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('version') }}:</span>
-                  <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">1.0.0</span>
-                </div>
-                <div>
-                  <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Entorno:</span>
-                  <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Desarrollo</span>
-                </div>
-                <div>
-                  <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">API:</span>
-                  <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">localhost:3000</span>
-                </div>
-                <div>
-                  <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Framework:</span>
-                  <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Angular 21</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+            @if (authLoading()) {
+              <span class="inline-block animate-spin mr-2">⏳</span>
+            }
+            {{ t('registrarse') }}
+          </button>
+        </form>
       }
-    </main>
+    </div>
   </div>
-
-  <!-- MODAL FLOTANTE -->
-  @if (mostrarModal()) {
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center" (click)="cerrarModal()">
+} @else {
+  <!-- APP PRINCIPAL -->
+  <div
+    class="min-h-screen flex transition-colors duration-300"
+    [class.bg-[#0f172a]]="darkMode()"
+    [class.text-slate-100]="darkMode()"
+    [class.bg-slate-50]="!darkMode()"
+    [class.text-slate-800]="!darkMode()"
+  >
+    <!-- SIDEBAR -->
+    <aside
+      class="h-screen sticky top-0 w-64 flex flex-col transition-colors duration-300 border-r"
+      [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+    >
       <div
-        class="rounded-2xl shadow-2xl p-6 w-full max-w-md border transition-colors duration-300"
-        [ngClass]="darkMode() ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'"
-        (click)="$event.stopPropagation()"
+        class="p-6 border-b transition-colors duration-300"
+        [class]="darkMode() ? 'border-slate-800' : 'border-slate-200'"
       >
-        <!-- Header del Modal -->
-        <div
-          class="flex justify-between items-center mb-6 pb-4 border-b transition-colors duration-300"
-          [ngClass]="darkMode() ? 'border-slate-700' : 'border-slate-200'"
+        <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+          {{ t('studySync') }}
+        </h1>
+        <p class="text-sm mt-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('infraestructura') }}</p>
+      </div>
+
+      <nav class="flex-1 p-4 space-y-2">
+        <button
+          (click)="cambiarModulo('dashboard')"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
+          [class]="moduloActivo() === 'dashboard' ? 'bg-violet-600 text-white' : (darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200')"
         >
-          <h3 class="text-xl font-semibold" [class]="darkMode() ? 'text-white' : 'text-slate-800'">
-            @if (reporteSeleccionado()) {
-              {{ t('editarReporte') }} #{{ reporteSeleccionado()?.id }}
-            } @else {
-              {{ t('nuevoReporte') }}
-            }
-          </h3>
+          <span class="text-lg">📊</span>
+          <span>{{ t('dashboard') }}</span>
+        </button>
+
+        <button
+          (click)="cambiarModulo('reportes')"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
+          [class]="moduloActivo() === 'reportes' ? 'bg-violet-600 text-white' : (darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200')"
+        >
+          <span class="text-lg">📋</span>
+          <span>{{ t('reportes') }}</span>
+        </button>
+
+        <button
+          (click)="cambiarModulo('configuracion')"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
+          [class]="moduloActivo() === 'configuracion' ? 'bg-violet-600 text-white' : (darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200')"
+        >
+          <span class="text-lg">⚙️</span>
+          <span>{{ t('configuracion') }}</span>
+        </button>
+
+        @if (isAdmin()) {
           <button
-            (click)="cerrarModal()"
-            class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-300"
-            [ngClass]="darkMode() ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+            (click)="cambiarModulo('admin-usuarios')"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
+            [class]="moduloActivo() === 'admin-usuarios' ? 'bg-violet-600 text-white' : (darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200')"
           >
-            ✕
+            <span class="text-lg">👥</span>
+            <span>Gestión de Usuarios</span>
+          </button>
+        }
+
+        <button
+          (click)="cambiarModulo('monitoreo-sockets')"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all text-left"
+          [class]="moduloActivo() === 'monitoreo-sockets' ? 'bg-violet-600 text-white' : (darkMode() ? 'text-slate-400 hover:bg-[#334155]' : 'text-slate-700 hover:bg-slate-200')"
+        >
+          <span class="text-lg">🖥️</span>
+          <span>Monitoreo Sockets</span>
+        </button>
+      </nav>
+
+      <div
+        class="p-4 border-t transition-colors duration-300"
+        [class]="darkMode() ? 'border-slate-800' : 'border-slate-200'"
+      >
+        <p class="text-xs text-center" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">{{ t('version') }} 1.0.0 - Programación IV</p>
+      </div>
+    </aside>
+
+    <!-- CONTENEDOR DERECHO -->
+    <div class="flex-1 min-w-0 p-8 overflow-y-auto h-screen">
+      <!-- HEADER -->
+      <header
+        class="p-4 flex justify-between items-center sticky top-0 z-10 mb-6 transition-colors duration-300 rounded-xl border-b"
+        [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+      >
+        <h2 class="text-xl font-semibold">
+          @switch (moduloActivo()) {
+            @case ('dashboard') { {{ t('dashboard') }} }
+            @case ('reportes') { {{ t('reportes') }} }
+            @case ('configuracion') { {{ t('configuracion') }} }
+            @case ('admin-usuarios') { 👑 Gestión de Usuarios }
+            @case ('monitoreo-sockets') { 🖥️ Monitoreo Sockets }
+          }
+        </h2>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2.5">
+            <span class="text-sm font-extrabold tracking-wider uppercase drop-shadow-[0_1px_2px_rgba(255,255,255,0.1)]" [class]="darkMode() ? 'text-white' : 'text-slate-800'">
+              👑 {{ usuario()?.nombre || 'PAUL' }}
+            </span>
+            <div class="w-9 h-9 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+              {{ usuario()?.nombre?.charAt(0)?.toUpperCase() || 'P' }}
+            </div>
+          </div>
+          <button
+            (click)="logout()"
+            class="text-xs px-3 py-1.5 rounded-lg font-medium transition-all hover:scale-105 border"
+            [class]="darkMode() ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300 border-slate-300'"
+          >
+            Cerrar Sesión
           </button>
         </div>
+      </header>
 
-        <!-- Formulario -->
-        <form (ngSubmit)="crearReporte()" class="space-y-5">
-          <div>
-            <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('titulo') }} *</label>
-            <input
-              type="text"
-              [ngModel]="titulo()"
-              (ngModelChange)="titulo.set($event)"
-              name="titulo"
-              placeholder="Ej: Luminaria quemada"
-              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
-              required
-            />
+      <main class="space-y-6">
+        @if (mensajeAlerta()) {
+          <div
+            class="p-4 bg-red-900/70 border-2 border-red-500 rounded-lg text-center text-red-200 font-bold shadow-lg animate-pulse"
+            role="alert"
+          >
+            <span class="text-xl mr-2">🚨</span>
+            {{ mensajeAlerta() }}
           </div>
+        }
 
-          <div>
-            <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('ubicacion') }} *</label>
-            <input
-              type="text"
-              [ngModel]="ubicacion()"
-              (ngModelChange)="ubicacion.set($event)"
-              name="ubicacion"
-              placeholder="Ej: Aula 204 - Edificio Principal"
-              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
-              required
-            />
+        @if (mensaje()) {
+          <div class="p-4 bg-blue-900/50 border border-blue-700 rounded-lg text-center text-blue-200">
+            {{ mensaje() }}
           </div>
+        }
 
-          <div>
-            <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('descripcion') }}</label>
-            <textarea
-              [ngModel]="descripcion()"
-              (ngModelChange)="descripcion.set($event)"
-              name="descripcion"
-              placeholder="Describe el incidente..."
-              rows="3"
-              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300 resize-none"
-              [ngClass]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
-            ></textarea>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('estado') }}</label>
-            <select
-              [(ngModel)]="estadoSeleccionado"
-              name="estado"
-              class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'"
+        <!-- DASHBOARD -->
+        @if (moduloActivo() === 'dashboard') {
+          <div
+            class="rounded-2xl p-6 border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+          >
+            <h3
+              class="text-lg font-semibold mb-5 pb-2 border-b transition-colors duration-300"
+              [class]="darkMode() ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-800'"
             >
-              <option value="Pendiente">Pendiente</option>
-              <option value="En Reparación">En Reparación</option>
-              <option value="Solucionado">Solucionado</option>
+              {{ t('panelControl') }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="rounded-2xl p-6 text-center shadow-lg bg-gradient-to-br from-pink-600 to-rose-500">
+                <div class="text-5xl font-bold text-white">{{ pendientes }}</div>
+                <div class="text-white/80 text-lg mt-2 font-medium">{{ t('pendientes') }}</div>
+              </div>
+              <div class="rounded-2xl p-6 text-center shadow-lg bg-gradient-to-br from-cyan-500 to-blue-500">
+                <div class="text-5xl font-bold text-white">{{ enReparacion }}</div>
+                <div class="text-white/80 text-lg mt-2 font-medium">{{ t('enReparacion') }}</div>
+              </div>
+              <div class="rounded-2xl p-6 text-center shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500">
+                <div class="text-5xl font-bold text-white">{{ solucionados }}</div>
+                <div class="text-white/80 text-lg mt-2 font-medium">{{ t('solucionados') }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              class="rounded-2xl p-6 border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+            >
+              <h4 class="text-lg font-semibold mb-4" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Incidentes por Infraestructura</h4>
+              <div class="space-y-4">
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Bloque A</span>
+                    <span class="text-sm font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">45%</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full" [class]="darkMode() ? 'bg-slate-700' : 'bg-slate-200'">
+                    <div class="h-2 bg-violet-500 rounded-full" style="width: 45%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Laboratorios</span>
+                    <span class="text-sm font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">35%</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full" [class]="darkMode() ? 'bg-slate-700' : 'bg-slate-200'">
+                    <div class="h-2 bg-cyan-500 rounded-full" style="width: 35%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">Áreas Verdes</span>
+                    <span class="text-sm font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">20%</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full" [class]="darkMode() ? 'bg-slate-700' : 'bg-slate-200'">
+                    <div class="h-2 bg-emerald-500 rounded-full" style="width: 20%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="rounded-2xl p-6 border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+            >
+              <h4 class="text-lg font-semibold mb-4" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Actividad Reciente</h4>
+              <div class="space-y-3">
+                @for (r of reportes().slice(0, 4); track r.id) {
+                  <div
+                    class="flex items-center gap-3 p-3 rounded-lg transition-colors duration-300"
+                    [class]="darkMode() ? 'bg-slate-800' : 'bg-slate-100'"
+                  >
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      [class]="r.estado === 'Pendiente' ? 'bg-rose-500' : r.estado === 'En Reparación' ? 'bg-cyan-500' : 'bg-emerald-500'"
+                    ></span>
+                    <span class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ r.titulo }} - {{ r.ubicacion }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- REPORTES -->
+        @if (moduloActivo() === 'reportes') {
+          <div class="flex justify-between items-center gap-4 mb-6">
+            <div class="relative flex-1 max-w-md">
+              <input
+                type="text"
+                [ngModel]="busqueda()"
+                (ngModelChange)="busqueda.set($event)"
+                [placeholder]="t('buscar')"
+                class="w-full px-4 py-3 pl-12 rounded-xl border transition-colors duration-300"
+                [class]="darkMode() ? 'bg-[#1e293b] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              />
+              <span class="absolute left-4 top-1/2 transform -translate-y-1/2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">🔍</span>
+            </div>
+            <button
+              (click)="abrirModal()"
+              class="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+            >
+              <span>➕</span>
+              <span>{{ t('nuevoReporte') }}</span>
+            </button>
+          </div>
+
+          <div
+            class="rounded-2xl p-6 border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+          >
+            <h3
+              class="text-lg font-semibold mb-5 pb-2 border-b transition-colors duration-300"
+              [class]="darkMode() ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-800'"
+            >
+              {{ t('listaReportes') }}
+            </h3>
+
+            <div class="overflow-x-auto w-full rounded-xl">
+              @if (cargando()) {
+                <div class="text-center py-12" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">
+                  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mx-auto mb-4"></div>
+                  <p>{{ t('cargando') }}</p>
+                </div>
+              } @else if (reportesFiltrados().length === 0) {
+                <div class="text-center py-12" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">
+                  <svg class="w-16 h-16 mx-auto mb-4" [class]="darkMode() ? 'text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <p class="text-lg">{{ t('noReportes') }}</p>
+                </div>
+              } @else {
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b transition-colors duration-300" [class]="darkMode() ? 'border-slate-700' : 'border-slate-200'">
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('titulo') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('ubicacion') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('estado') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('reportadoPor') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Fecha</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('acciones') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y transition-colors duration-300" [class]="darkMode() ? 'divide-slate-800' : 'divide-slate-200'">
+                    @for (reporte of reportesFiltrados(); track reporte.id) {
+                      <tr class="transition-colors"
+                          [class]="darkMode() ? 'hover:bg-[#334155]' : 'hover:bg-slate-100'"
+                      >
+                        <td class="py-4 px-4 font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ reporte.titulo }}</td>
+                        <td class="py-4 px-4" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ reporte.ubicacion }}</td>
+                        <td class="py-4 px-4">
+                          <span
+                            class="px-3 py-1 rounded-full text-xs font-semibold"
+                            [class]="{
+                              'bg-rose-900/50 text-rose-400 border border-rose-700': reporte.estado === 'Pendiente',
+                              'bg-cyan-900/50 text-cyan-400 border border-cyan-700': reporte.estado === 'En Reparación',
+                              'bg-emerald-900/50 text-emerald-400 border border-emerald-700': reporte.estado === 'Solucionado'
+                            }"
+                          >
+                            {{ reporte.estado }}
+                          </span>
+                        </td>
+                        <td class="py-4 px-4" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">
+                          @if (reporte.usuario) {
+                            {{ reporte.usuario.nombre }}
+                          } @else {
+                            <span class="italic" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">—</span>
+                          }
+                        </td>
+                        <td class="py-4 px-4" [class]="darkMode() ? 'text-slate-500' : 'text-slate-600'">{{ reporte.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+                        <td class="py-4 px-4">
+                          <div class="flex gap-2">
+                            <button
+                              (click)="abrirModalEdicion(reporte)"
+                              class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all hover:scale-105 shadow-md"
+                              title="Editar"
+                            >
+                              ✏️ {{ t('editarReporte') }}
+                            </button>
+                            <button
+                              (click)="eliminarReporte(reporte.id)"
+                              class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-all hover:scale-105 shadow-md"
+                              title="Eliminar"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- CONFIGURACIÓN -->
+        @if (moduloActivo() === 'configuracion') {
+          <div
+            class="rounded-2xl p-6 border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+          >
+            <h3
+              class="text-lg font-semibold mb-6 pb-2 border-b transition-colors duration-300"
+              [class]="darkMode() ? 'border-slate-700 text-white' : 'border-slate-200 text-slate-800'"
+            >
+              {{ t('perfil') }}
+            </h3>
+
+            <div class="space-y-4">
+              @if (perfilMensaje()) {
+                <div class="p-3 rounded-lg text-center text-sm font-medium"
+                  [class]="perfilMensaje().includes('✅') ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700' : 'bg-red-900/50 text-red-300 border border-red-700'"
+                >
+                  {{ perfilMensaje() }}
+                </div>
+              }
+              <div>
+                <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('nombre') }}</label>
+                <input
+                  type="text"
+                  [ngModel]="perfilNombre()"
+                  (ngModelChange)="perfilNombre.set($event)"
+                  class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+                  [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('email') }}</label>
+                <input
+                  type="email"
+                  [ngModel]="perfilEmail()"
+                  (ngModelChange)="perfilEmail.set($event)"
+                  [readonly]="!isAdmin()"
+                  class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+                  [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+                  [class.opacity-60]="!isAdmin()"
+                />
+                @if (!isAdmin()) {
+                  <p class="text-xs mt-1" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">Solo el administrador puede cambiar su email</p>
+                }
+              </div>
+              <button
+                (click)="updatePerfil()"
+                [disabled]="perfilLoading()"
+                class="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+              >
+                @if (perfilLoading()) {
+                  <span class="inline-block animate-spin mr-2">⏳</span>
+                }
+                {{ t('actualizar') }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Dark Mode -->
+          <div
+            class="flex items-center justify-between p-4 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+          >
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-2xl">
+                @if (darkMode()) { 🌙 } @else { ☀️ }
+              </div>
+              <div>
+                <p class="font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('darkMode') }}</p>
+                <p class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Activa o desactiva el tema oscuro</p>
+              </div>
+            </div>
+            <button
+              (click)="toggleDarkMode()"
+              class="w-14 h-8 rounded-full transition-all duration-300"
+              [class]="darkMode() ? 'bg-violet-600' : 'bg-slate-400'"
+            >
+              <div
+                class="w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300"
+                [class]="darkMode() ? 'translate-x-6' : 'translate-x-1'"
+              ></div>
+            </button>
+          </div>
+
+          <!-- Idioma -->
+          <div
+            class="flex items-center justify-between p-4 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+          >
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-2xl">
+                🌐
+              </div>
+              <div>
+                <p class="font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('idioma') }}</p>
+                <p class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('idiomaLabel') }}</p>
+              </div>
+            </div>
+            <select
+              (change)="cambiarIdioma($event)"
+              [value]="idioma()"
+              class="px-4 py-2 rounded-lg border transition-colors duration-300"
+              [class]="darkMode() ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-800'"
+            >
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="pt">Português</option>
             </select>
           </div>
 
-          <div class="flex gap-3 pt-2">
+          <!-- Notificaciones -->
+          <div
+            class="flex items-center justify-between p-4 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+          >
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl">
+                🔔
+              </div>
+              <div>
+                <p class="font-medium" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('notificaciones') }}</p>
+                <p class="text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('notificacionesLabel') }}</p>
+              </div>
+            </div>
             <button
-              type="button"
-              (click)="cerrarModal()"
-              class="flex-1 py-3 px-6 rounded-xl font-semibold transition-colors duration-300"
-              [ngClass]="darkMode() ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
+              (click)="toggleNotificaciones()"
+              class="w-14 h-8 rounded-full transition-all duration-300"
+              [class]="notificaciones() ? 'bg-violet-600' : 'bg-slate-500'"
             >
-              {{ t('cancelar') }}
-            </button>
-            <button
-              type="button"
-              (click)="reporteSeleccionado() ? guardarCambiosReporte() : crearReporte()"
-              class="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all"
-            >
-              @if (reporteSeleccionado()) {
-                {{ t('guardarCambios') }}
-              } @else {
-                {{ t('crearReporte') }}
-              }
+              <div
+                class="w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300"
+                [class]="notificaciones() ? 'translate-x-6' : 'translate-x-1'"
+              ></div>
             </button>
           </div>
-        </form>
-      </div>
+
+          <!-- Info del sistema -->
+          <div
+            class="mt-8 p-4 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#0f172a] border-slate-700' : 'bg-slate-50 border-slate-200'"
+          >
+            <h4 class="font-medium mb-3" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ t('infoSistema') }}</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('version') }}:</span>
+                <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">1.0.0</span>
+              </div>
+              <div>
+                <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Entorno:</span>
+                <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Desarrollo</span>
+              </div>
+              <div>
+                <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">API:</span>
+                <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">localhost:3000</span>
+              </div>
+              <div>
+                <span [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Framework:</span>
+                <span class="ml-2" [class]="darkMode() ? 'text-white' : 'text-slate-800'">Angular 21</span>
+              </div>
+            </div>
+          </div>
+
+        }
+
+        @if (moduloActivo() === 'admin-usuarios') {
+          <admin-usuarios [darkMode]="darkMode()" [t]="$any(t)" />
+        }
+
+        @if (moduloActivo() === 'monitoreo-sockets') {
+          <monitoreo-sockets [darkMode]="darkMode()" />
+        }
+      </main>
     </div>
-  }
-</div>
+
+    <!-- MODAL -->
+    @if (mostrarModal()) {
+      <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center" (click)="cerrarModal()">
+        <div
+          class="rounded-2xl shadow-2xl p-6 w-full max-w-md border transition-colors duration-300"
+          [class]="darkMode() ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'"
+          (click)="$event.stopPropagation()"
+        >
+          <div
+            class="flex justify-between items-center mb-6 pb-4 border-b transition-colors duration-300"
+            [class]="darkMode() ? 'border-slate-700' : 'border-slate-200'"
+          >
+            <h3 class="text-xl font-semibold" [class]="darkMode() ? 'text-white' : 'text-slate-800'">
+              @if (reporteSeleccionado()) {
+                {{ t('editarReporte') }}
+              } @else {
+                {{ t('nuevoReporte') }}
+              }
+            </h3>
+            <button
+              (click)="cerrarModal()"
+              class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-300"
+              [class]="darkMode() ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form (ngSubmit)="crearReporte()" class="space-y-5">
+            <div>
+              <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('titulo') }} *</label>
+              <input
+                type="text"
+                [ngModel]="titulo()"
+                (ngModelChange)="titulo.set($event)"
+                name="titulo"
+                placeholder="Ej: Luminaria quemada"
+                class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+                [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('ubicacion') }} *</label>
+              <input
+                type="text"
+                [ngModel]="ubicacion()"
+                (ngModelChange)="ubicacion.set($event)"
+                name="ubicacion"
+                placeholder="Ej: Aula 204 - Edificio Principal"
+                class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+                [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('descripcion') }}</label>
+              <textarea
+                [ngModel]="descripcion()"
+                (ngModelChange)="descripcion.set($event)"
+                name="descripcion"
+                placeholder="Describe el incidente..."
+                rows="3"
+                class="w-full px-4 py-3 rounded-xl border transition-colors duration-300 resize-none"
+                [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+              ></textarea>
+            </div>
+
+            @if (reporteSeleccionado()) {
+              <div>
+                <label class="block text-sm font-medium mb-2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t('estado') }}</label>
+                <select
+                  [(ngModel)]="estadoSeleccionado"
+                  name="estado"
+                  class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+                  [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'"
+                >
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="En Reparación">En Reparación</option>
+                  <option value="Solucionado">Solucionado</option>
+                </select>
+              </div>
+            }
+
+            <div class="flex gap-3 pt-2">
+              <button
+                type="button"
+                (click)="cerrarModal()"
+                class="flex-1 py-3 px-6 rounded-xl font-semibold transition-colors duration-300"
+                [class]="darkMode() ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
+              >
+                {{ t('cancelar') }}
+              </button>
+              <button
+                type="button"
+                (click)="reporteSeleccionado() ? guardarCambiosReporte() : crearReporte()"
+                class="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all"
+              >
+                @if (reporteSeleccionado()) {
+                  {{ t('guardarCambios') }}
+                } @else {
+                  {{ t('crearReporte') }}
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+  </div>
+}

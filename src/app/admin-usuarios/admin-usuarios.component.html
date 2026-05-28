@@ -1,0 +1,203 @@
+@if (mensaje()) {
+  <div class="p-4 mb-4 bg-blue-900/50 border border-blue-700 rounded-lg text-center text-blue-200">
+    {{ mensaje() }}
+  </div>
+}
+
+<div
+  class="rounded-2xl p-6 border transition-colors duration-300"
+  [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+>
+  <div class="flex justify-between items-center mb-5 pb-2 border-b transition-colors duration-300"
+    [class]="darkMode() ? 'border-slate-700' : 'border-slate-200'"
+  >
+    <h3 class="text-lg font-semibold" [class]="darkMode() ? 'text-white' : 'text-slate-800'">
+      👑 {{ t()('adminPanel') }}
+    </h3>
+    <button
+      (click)="abrirModalCrearUsuario()"
+      class="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-sm font-semibold py-2 px-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+    >
+      <span>➕</span>
+      <span>{{ t()('crearUsuario') }}</span>
+    </button>
+  </div>
+
+  <div class="relative max-w-md mb-4">
+    <input
+      type="text"
+      [ngModel]="busquedaAdmin()"
+      (ngModelChange)="busquedaAdmin.set($event)"
+      [placeholder]="t()('buscarUsuarios')"
+      class="w-full px-4 py-3 pl-12 rounded-xl border transition-colors duration-300"
+      [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+    />
+    <span class="absolute left-4 top-1/2 transform -translate-y-1/2" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">🔍</span>
+  </div>
+
+  @if (adminLoading()) {
+    <div class="text-center py-8" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500 mx-auto mb-2"></div>
+      <p class="text-sm">{{ t()('cargando') }}</p>
+    </div>
+  } @else if (usuariosFiltrados().length === 0) {
+    <div class="text-center py-8" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">
+      <p class="text-sm">{{ t()('sinUsuarios') }}</p>
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b transition-colors duration-300" [class]="darkMode() ? 'border-slate-700' : 'border-slate-200'">
+            <th class="py-3 px-3 text-xs font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t()('nombre') }}</th>
+            <th class="py-3 px-3 text-xs font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t()('email') }}</th>
+            <th class="py-3 px-3 text-xs font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t()('rol') }}</th>
+            <th class="py-3 px-3 text-xs font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t()('acciones') }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y transition-colors duration-300" [class]="darkMode() ? 'divide-slate-800' : 'divide-slate-200'">
+          @for (u of usuariosFiltrados(); track u.id) {
+            <tr class="transition-colors duration-300" [class]="darkMode() ? 'hover:bg-[#334155]' : 'hover:bg-slate-50'">
+              <td class="py-3 px-3 font-medium text-sm" [class]="darkMode() ? 'text-white' : 'text-slate-800'">{{ u.nombre }}</td>
+              <td class="py-3 px-3 text-sm" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ u.email }}</td>
+              <td class="py-3 px-3">
+                <span
+                  class="px-2 py-0.5 rounded-full text-xs font-semibold"
+                  [class]="u.rol === 'ADMINISTRADOR' ? 'bg-violet-900/50 text-violet-400 border border-violet-700' : 'bg-slate-700 text-slate-300 border border-slate-600'"
+                >
+                  {{ u.rol }}
+                </span>
+              </td>
+              <td class="py-3 px-3">
+                <div class="flex gap-1">
+                  <button
+                    (click)="abrirModalEditarUsuario(u)"
+                    class="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-all hover:scale-105 shadow-md"
+                    title="Editar"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    (click)="eliminarUsuarioAdmin(u.id)"
+                    class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium transition-all hover:scale-105 shadow-md"
+                    title="Eliminar"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- ADMIN MODAL -->
+@if (adminModalAbierto()) {
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center" (click)="cerrarModalAdmin()">
+    <div
+      class="rounded-2xl shadow-2xl p-6 w-full max-w-md border transition-colors duration-300"
+      [class]="darkMode() ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="flex justify-between items-center mb-6 pb-4 border-b transition-colors duration-300"
+        [class]="darkMode() ? 'border-slate-700' : 'border-slate-200'"
+      >
+        <h3 class="text-xl font-semibold" [class]="darkMode() ? 'text-white' : 'text-slate-800'">
+          @if (adminModalMode() === 'crear') {
+            ➕ {{ t()('crearUsuario') }}
+          } @else {
+            ✏️ {{ t()('editarUsuario') }}
+          }
+        </h3>
+        <button
+          (click)="cerrarModalAdmin()"
+          class="w-8 h-8 flex items-center justify-center rounded-lg transition-colors duration-300"
+          [class]="darkMode() ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+        >
+          ✕
+        </button>
+      </div>
+
+      @if (adminFormError()) {
+        <div class="p-3 mb-4 bg-red-900/60 border border-red-500 rounded-lg text-center text-red-200 text-sm" role="alert">
+          {{ adminFormError() }}
+        </div>
+      }
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t()('nombre') }} *</label>
+          <input
+            type="text"
+            [ngModel]="adminFormNombre()"
+            (ngModelChange)="adminFormNombre.set($event)"
+            placeholder="Juan Pérez"
+            class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t()('email') }} *</label>
+          <input
+            type="email"
+            [ngModel]="adminFormEmail()"
+            (ngModelChange)="adminFormEmail.set($event)"
+            placeholder="correo@upds.edu.bo"
+            class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t()('contrasena') }}</label>
+          <input
+            type="password"
+            [ngModel]="adminFormPassword()"
+            (ngModelChange)="adminFormPassword.set($event)"
+            placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white placeholder-slate-500' : 'bg-white border-slate-300 text-slate-900'"
+          />
+          @if (adminModalMode() === 'editar') {
+            <p class="text-xs mt-1" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">{{ t()('sinPassword') }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" [class]="darkMode() ? 'text-slate-400' : 'text-slate-600'">{{ t()('rol') }}</label>
+          <select
+            [ngModel]="adminFormRol()"
+            (ngModelChange)="adminFormRol.set($event)"
+            class="w-full px-4 py-3 rounded-xl border transition-colors duration-300"
+            [class]="darkMode() ? 'bg-[#0f172a] border-slate-700 text-white' : 'bg-white border-slate-300 text-slate-900'"
+          >
+            <option value="USUARIO">USUARIO</option>
+            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+          </select>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button
+            type="button"
+            (click)="cerrarModalAdmin()"
+            class="flex-1 py-3 px-6 rounded-xl font-semibold transition-colors duration-300"
+            [class]="darkMode() ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
+          >
+            {{ t()('cancelar') }}
+          </button>
+          <button
+            (click)="guardarUsuarioAdmin()"
+            [disabled]="adminFormLoading()"
+            class="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+          >
+            @if (adminFormLoading()) {
+              <span class="inline-block animate-spin mr-2">⏳</span>
+            }
+            {{ t()('guardar') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

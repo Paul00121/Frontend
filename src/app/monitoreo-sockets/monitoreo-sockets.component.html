@@ -1,0 +1,54 @@
+<div
+  class="rounded-2xl border transition-colors duration-300 overflow-hidden"
+  [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
+>
+  <div
+    class="flex items-center gap-3 px-6 py-4 border-b transition-colors duration-300"
+    [class]="darkMode() ? 'border-slate-800 bg-[#0f172a]' : 'border-slate-200 bg-slate-50'"
+  >
+    <span class="text-lg">🖥️</span>
+    <h3 class="text-lg font-semibold" [class]="darkMode() ? 'text-white' : 'text-slate-800'">
+      Consola de Monitoreo — WebSockets en Tiempo Real
+    </h3>
+  </div>
+
+  <div class="p-4">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+      <span class="text-xs font-medium" [class]="darkMode() ? 'text-green-400' : 'text-green-600'">
+        EN VIVO
+      </span>
+      <span class="text-xs" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">
+        — {{ logs().length }} eventos registrados
+      </span>
+    </div>
+
+    <div
+      class="h-[500px] overflow-y-auto rounded-xl border font-mono text-sm leading-relaxed p-4"
+      [class]="darkMode()
+        ? 'bg-black text-green-400 border-slate-700'
+        : 'bg-gray-900 text-green-300 border-slate-300'"
+    >
+      @if (logs().length === 0) {
+        <div class="flex items-center justify-center h-full text-center opacity-60">
+          <div>
+            <p class="text-base mb-2">⏳ Esperando eventos...</p>
+            <p class="text-xs opacity-50">Los mensajes aparecerán aquí cuando haya actividad en los WebSockets</p>
+          </div>
+        </div>
+      } @else {
+        @for (log of logs(); track log; let i = $index) {
+          <div class="whitespace-pre-wrap break-all">
+            <span class="opacity-70">{{ log }}</span>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="flex items-center gap-4 mt-3 text-xs" [class]="darkMode() ? 'text-slate-500' : 'text-slate-400'">
+      <span>🟢 Conectado</span>
+      <span>⚡ Socket.io</span>
+      <span>📡 Redis Pub/Sub</span>
+    </div>
+  </div>
+</div>

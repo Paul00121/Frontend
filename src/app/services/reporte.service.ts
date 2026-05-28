@@ -5,12 +5,17 @@ import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Reporte {
-  id: number;
+  id: string;
   titulo: string;
   descripcion: string;
   ubicacion: string;
   estado: 'Pendiente' | 'En Reparación' | 'Solucionado';
   fechaCreacion: Date | string;
+  usuario?: {
+    id: string;
+    nombre: string;
+    email: string;
+  };
 }
 
 @Injectable({
@@ -27,7 +32,7 @@ export class ReporteService {
     );
   }
 
-  getById(id: number): Observable<Reporte> {
+  getById(id: string): Observable<Reporte> {
     return this.http.get<Reporte>(`${this.API_URL}/${id}`);
   }
 
@@ -37,32 +42,16 @@ export class ReporteService {
     );
   }
 
-  update(id: number, reporte: Partial<Reporte>): Observable<Reporte> {
+  update(id: string, reporte: Partial<Reporte>): Observable<Reporte> {
     return this.http.put<Reporte>(`${this.API_URL}/${id}`, reporte);
   }
 
-  delete(id: number): Observable<{ mensaje: string }> {
+  delete(id: string): Observable<{ mensaje: string }> {
     return this.http.delete<{ mensaje: string }>(`${this.API_URL}/${id}`);
   }
 
-  cambiarEstado(id: number, nuevoEstado: string): Observable<Reporte> {
-    return this.http.put<Reporte>(`${this.API_URL}/${id}`, { estado: nuevoEstado });
+  cambiarEstado(id: string, nuevoEstado: string): Observable<Reporte> {
+    return this.http.patch<Reporte>(`${this.API_URL}/${id}`, { estado: nuevoEstado });
   }
 
-  listenToReportStream(): Observable<any> {
-    return new Observable((observer) => {
-      const eventSource = new EventSource(`${environment.apiUrl}/reportes/stream`);
-
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        observer.next(data);
-      };
-
-      eventSource.onerror = (error) => {
-        observer.error(error);
-      };
-
-      return () => eventSource.close();
-    });
-  }
 }
