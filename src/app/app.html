@@ -142,15 +142,22 @@
 } @else {
   <!-- APP PRINCIPAL -->
   <div
-    class="min-h-screen flex transition-colors duration-300"
+    class="min-h-screen flex-col md:flex-row transition-colors duration-300"
     [class.bg-[#0f172a]]="darkMode()"
     [class.text-slate-100]="darkMode()"
     [class.bg-slate-50]="!darkMode()"
     [class.text-slate-800]="!darkMode()"
   >
+    <!-- BACKDROP (mobile only) -->
+    @if (sidebarOpen()) {
+      <div class="fixed inset-0 z-30 bg-black/50 md:hidden" (click)="toggleSidebar()"></div>
+    }
+
     <!-- SIDEBAR -->
     <aside
-      class="h-screen sticky top-0 w-64 flex flex-col transition-colors duration-300 border-r"
+      class="fixed inset-y-0 left-0 z-40 w-64 flex flex-col transition-transform duration-300 ease-in-out border-r md:sticky md:translate-x-0"
+      [class.-translate-x-full]="!sidebarOpen()"
+      [class.translate-x-0]="sidebarOpen()"
       [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
     >
       <div
@@ -221,21 +228,31 @@
     </aside>
 
     <!-- CONTENEDOR DERECHO -->
-    <div class="flex-1 min-w-0 p-8 overflow-y-auto h-screen">
+    <div class="flex-1 min-w-0 p-4 md:p-8 overflow-y-auto h-screen">
       <!-- HEADER -->
       <header
         class="p-4 flex justify-between items-center sticky top-0 z-10 mb-6 transition-colors duration-300 rounded-xl border-b"
         [class]="darkMode() ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'"
       >
-        <h2 class="text-xl font-semibold">
-          @switch (moduloActivo()) {
-            @case ('dashboard') { {{ t('dashboard') }} }
-            @case ('reportes') { {{ t('reportes') }} }
-            @case ('configuracion') { {{ t('configuracion') }} }
-            @case ('admin-usuarios') { 👑 Gestión de Usuarios }
-            @case ('monitoreo-sockets') { 🖥️ Monitoreo Sockets }
-          }
-        </h2>
+        <div class="flex items-center gap-3">
+          <button
+            (click)="toggleSidebar()"
+            class="md:hidden text-xl p-1 rounded-lg transition-colors"
+            [class]="darkMode() ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-200'"
+            aria-label="Toggle sidebar"
+          >
+            ☰
+          </button>
+          <h2 class="text-xl font-semibold">
+            @switch (moduloActivo()) {
+              @case ('dashboard') { {{ t('dashboard') }} }
+              @case ('reportes') { {{ t('reportes') }} }
+              @case ('configuracion') { {{ t('configuracion') }} }
+              @case ('admin-usuarios') { 👑 Gestión de Usuarios }
+              @case ('monitoreo-sockets') { 🖥️ Monitoreo Sockets }
+            }
+          </h2>
+        </div>
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2.5">
             <span class="text-sm font-extrabold tracking-wider uppercase drop-shadow-[0_1px_2px_rgba(255,255,255,0.1)]" [class]="darkMode() ? 'text-white' : 'text-slate-800'">

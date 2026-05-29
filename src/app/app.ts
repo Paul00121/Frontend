@@ -89,6 +89,7 @@ export class App implements OnInit, OnDestroy {
 
   moduloActivo = signal<'dashboard' | 'reportes' | 'configuracion' | 'admin-usuarios' | 'monitoreo-sockets'>('dashboard');
   mostrarModal = signal(false);
+  sidebarOpen = signal(false);
 
   reporteSeleccionado = signal<Reporte | null>(null);
   estadoSeleccionado = signal<string>('Pendiente');
@@ -545,6 +546,7 @@ export class App implements OnInit, OnDestroy {
 
   cambiarModulo(modulo: 'dashboard' | 'reportes' | 'configuracion' | 'admin-usuarios' | 'monitoreo-sockets') {
     this.moduloActivo.set(modulo);
+    this.sidebarOpen.set(false);
     if (modulo === 'configuracion') {
       this.iniciarPerfil();
     }
@@ -561,6 +563,10 @@ export class App implements OnInit, OnDestroy {
     this.ubicacion.set('');
     this.reporteSeleccionado.set(null);
     this.estadoSeleccionado.set('Pendiente');
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.update(v => !v);
   }
 
   toggleDarkMode() {
