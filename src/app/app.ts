@@ -349,11 +349,6 @@ export class App implements OnInit, OnDestroy {
       );
     });
 
-    const user = this.usuario();
-    if (user) {
-      socket.emit('registrar-usuario', { nombre: user.nombre, email: user.email });
-    }
-
     this.destroyRef.onDestroy(() => this.socketService.disconnect());
   }
 
