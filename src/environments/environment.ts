@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://studysync-back.onrender.com/api'
+  apiUrl: 'https://studysync-api-l59a.onrender.com/api'
 };
