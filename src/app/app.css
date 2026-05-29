@@ -1,0 +1,6 @@
+/* Fuerza translateX(0) en desktop para que el sidebar nunca se desplace */
+@media (min-width: 768px) {
+  aside {
+    transform: translateX(0) !important;
+  }
+}
