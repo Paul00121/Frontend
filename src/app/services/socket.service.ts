@@ -62,6 +62,9 @@ export class SocketService implements OnDestroy {
       this.socket.on('usuario.eliminado', (data: any) =>
         this.addLog(`[EVENTO] Usuario eliminado en tiempo real — ID: ${data.id}`)
       );
+      this.socket.on('usuario-conectado', (data: any) =>
+        this.addLog(`[SESION] ${data.nombre} (${data.email}) ha iniciado sesión`)
+      );
       this.loggingInitialized = true;
     }
 
