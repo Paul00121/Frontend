@@ -18,6 +18,19 @@ export interface Reporte {
   };
 }
 
+export interface Comentario {
+  id: string;
+  nota: string;
+  fecha: string;
+  reporteId: string;
+  usuarioId: string;
+  usuario: {
+    id: string;
+    nombre: string;
+    email: string;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -52,6 +65,14 @@ export class ReporteService {
 
   cambiarEstado(id: string, nuevoEstado: string): Observable<Reporte> {
     return this.http.patch<Reporte>(`${this.API_URL}/${id}`, { estado: nuevoEstado });
+  }
+
+  getComentarios(reporteId: string): Observable<Comentario[]> {
+    return this.http.get<Comentario[]>(`${this.API_URL}/${reporteId}/comentarios`);
+  }
+
+  crearComentario(reporteId: string, nota: string): Observable<Comentario> {
+    return this.http.post<Comentario>(`${this.API_URL}/${reporteId}/comentarios`, { nota });
   }
 
 }

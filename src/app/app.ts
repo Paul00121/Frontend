@@ -1,7 +1,7 @@
 import { Component, signal, inject, OnInit, OnDestroy, computed, NgZone, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReporteService, Reporte } from './services/reporte.service';
+import { ReporteService, Reporte, Comentario } from './services/reporte.service';
 import { AuthService } from './services/auth.service';
 import { SocketService } from './services/socket.service';
 import { AdminUsuariosComponent } from './admin-usuarios/admin-usuarios.component';
@@ -93,6 +93,11 @@ export class App implements OnInit, OnDestroy {
 
   reporteSeleccionado = signal<Reporte | null>(null);
   estadoSeleccionado = signal<string>('Pendiente');
+
+  comentarios = signal<Comentario[]>([]);
+  nuevoComentarioTexto = signal('');
+  comentariosCargando = signal(false);
+  reporteComentariosActivo = signal<Reporte | null>(null);
 
   darkMode = signal(true);
   idioma = signal<'es' | 'en' | 'pt'>('es');
@@ -515,6 +520,35 @@ export class App implements OnInit, OnDestroy {
         this.manejarErrorHttp(err, 'eliminar reporte');
         console.error(err);
       }
+    });
+  }
+
+  abrirComentarios(reporte: Reporte) {
+    this.reporteComentariosActivo.set(reporte);
+    this.comentariosCargando.set(true);
+    this.reporteService.getComentarios(reporte.id).subscribe({
+      next: (data) => { this.comentarios.set(data); this.comentariosCargando.set(false); },
+      error: () => { this.comentariosCargando.set(false); }
+    });
+  }
+
+  cerrarComentarios() {
+    this.reporteComentariosActivo.set(null);
+    this.comentarios.set([]);
+    this.nuevoComentarioTexto.set('');
+  }
+
+  enviarComentario() {
+    const texto = this.nuevoComentarioTexto().trim();
+    const reporte = this.reporteComentariosActivo();
+    if (!texto || !reporte) return;
+
+    this.reporteService.crearComentario(reporte.id, texto).subscribe({
+      next: () => {
+        this.nuevoComentarioTexto.set('');
+        this.abrirComentarios(reporte);
+      },
+      error: (err) => this.manejarErrorHttp(err, 'enviar comentario')
     });
   }
 
