@@ -411,7 +411,7 @@
               {{ t('listaReportes') }}
             </h3>
 
-            <div class="overflow-x-auto w-full rounded-xl">
+            <div class="overflow-auto w-full rounded-xl max-h-[500px]">
               @if (cargando()) {
                 <div class="text-center py-12" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">
                   <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mx-auto mb-4"></div>
@@ -426,14 +426,14 @@
                 </div>
               } @else {
                 <table class="w-full text-left border-collapse">
-                  <thead>
+                  <thead class="sticky top-0 z-10">
                     <tr class="border-b transition-colors duration-300" [class]="darkMode() ? 'border-slate-700' : 'border-slate-200'">
-                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('titulo') }}</th>
-                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('ubicacion') }}</th>
-                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('estado') }}</th>
-                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('reportadoPor') }}</th>
-                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">Fecha</th>
-                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'text-slate-400' : 'text-slate-500'">{{ t('acciones') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'bg-[#1e293b] text-slate-400' : 'bg-white text-slate-500'">{{ t('titulo') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'bg-[#1e293b] text-slate-400' : 'bg-white text-slate-500'">{{ t('ubicacion') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'bg-[#1e293b] text-slate-400' : 'bg-white text-slate-500'">{{ t('estado') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'bg-[#1e293b] text-slate-400' : 'bg-white text-slate-500'">{{ t('reportadoPor') }}</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'bg-[#1e293b] text-slate-400' : 'bg-white text-slate-500'">Fecha</th>
+                      <th class="py-4 px-4 text-sm font-semibold uppercase tracking-wider" [class]="darkMode() ? 'bg-[#1e293b] text-slate-400' : 'bg-white text-slate-500'">{{ t('acciones') }}</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y transition-colors duration-300" [class]="darkMode() ? 'divide-slate-800' : 'divide-slate-200'">
