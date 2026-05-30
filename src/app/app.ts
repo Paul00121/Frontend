@@ -410,6 +410,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   logout() {
+    this.socketService.disconnect();
     this.authService.logout();
     this.reportes.set([]);
     this.moduloActivo.set('dashboard');

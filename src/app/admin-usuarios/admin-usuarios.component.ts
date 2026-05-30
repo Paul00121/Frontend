@@ -73,7 +73,6 @@ export class AdminUsuariosComponent implements OnInit {
       );
     });
 
-    this.destroyRef.onDestroy(() => this.socketService.disconnect());
   }
 
   cargarUsuarios() {
