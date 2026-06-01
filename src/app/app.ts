@@ -315,6 +315,20 @@ export class App implements OnInit, OnDestroy {
     );
   });
 
+  tituloModulo = computed(() => {
+    const mod = this.moduloActivo();
+    switch (mod) {
+      case 'dashboard': return this.t('dashboard');
+      case 'reportes': return this.t('reportes');
+      case 'configuracion': return this.t('configuracion');
+      case 'admin-usuarios': return '👑 Gestión de Usuarios';
+      case 'monitoreo-sockets': return '🖥️ Monitoreo Sockets';
+      default: return '';
+    }
+  });
+
+  private STORAGE_KEY_COMENTARIO = 'reporteComentarioActivoId';
+
   ngOnInit() {
     if (this.isAuthenticated()) {
       this.cargarReportes();
@@ -455,6 +469,7 @@ export class App implements OnInit, OnDestroy {
       next: (data) => {
         this.reportes.set(data);
         this.cargando.set(false);
+        this.restaurarComentarios();
       },
       error: (err) => {
         console.error('Error al cargar:', err);
@@ -462,6 +477,17 @@ export class App implements OnInit, OnDestroy {
         this.cargando.set(false);
       }
     });
+  }
+
+  private restaurarComentarios() {
+    const id = localStorage.getItem(this.STORAGE_KEY_COMENTARIO);
+    if (!id) return;
+    const reporte = this.reportes().find(r => r.id === id);
+    if (reporte) {
+      this.abrirComentarios(reporte);
+    } else {
+      localStorage.removeItem(this.STORAGE_KEY_COMENTARIO);
+    }
   }
 
   crearReporte() {
@@ -525,6 +551,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   abrirComentarios(reporte: Reporte) {
+    localStorage.setItem(this.STORAGE_KEY_COMENTARIO, reporte.id);
     this.reporteComentariosActivo.set(reporte);
     this.comentariosCargando.set(true);
     this.reporteService.getComentarios(reporte.id).subscribe({
@@ -534,6 +561,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   cerrarComentarios() {
+    localStorage.removeItem(this.STORAGE_KEY_COMENTARIO);
     this.reporteComentariosActivo.set(null);
     this.comentarios.set([]);
     this.nuevoComentarioTexto.set('');
@@ -583,6 +611,9 @@ export class App implements OnInit, OnDestroy {
   cambiarModulo(modulo: 'dashboard' | 'reportes' | 'configuracion' | 'admin-usuarios' | 'monitoreo-sockets') {
     this.moduloActivo.set(modulo);
     this.sidebarOpen.set(false);
+    if (modulo !== 'reportes') {
+      this.cerrarComentarios();
+    }
     if (modulo === 'configuracion') {
       this.iniciarPerfil();
     }
