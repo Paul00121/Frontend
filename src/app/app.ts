@@ -415,6 +415,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   logout() {
+    this.authService.logoutBackend().subscribe({ error: () => {} });
     this.socketService.disconnect();
     this.authService.logout();
     this.reportes.set([]);

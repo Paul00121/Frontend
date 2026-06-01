@@ -67,6 +67,10 @@ export class AuthService {
     return this.http.delete<{ mensaje: string }>(`${this.API_URL}/usuarios/${id}`);
   }
 
+  logoutBackend(): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${this.API_URL}/logout`, {});
+  }
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');

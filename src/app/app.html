@@ -142,7 +142,7 @@
 } @else {
   <!-- APP PRINCIPAL -->
   <div
-    class="min-h-screen flex w-full flex-col md:flex-row transition-colors duration-300"
+    class="h-screen flex w-full flex-col md:flex-row overflow-y-auto transition-colors duration-300"
     [class.bg-[#0f172a]]="darkMode()"
     [class.text-slate-100]="darkMode()"
     [class.bg-slate-50]="!darkMode()"
@@ -228,7 +228,7 @@
     </aside>
 
     <!-- CONTENEDOR DERECHO -->
-    <div class="flex-1 min-w-0 p-4 md:p-8 overflow-y-auto h-screen">
+    <div class="flex-1 min-w-0 p-4 md:p-8">
       <!-- HEADER -->
       <header
         class="p-4 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300 border-b shadow-md"
