@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ReporteService, Reporte, Comentario } from './services/reporte.service';
 import { AuthService } from './services/auth.service';
 import { SocketService } from './services/socket.service';
+import { PushService } from './services/push.service';
 import { AdminUsuariosComponent } from './admin-usuarios/admin-usuarios.component';
 import { MonitoreoSocketsComponent } from './monitoreo-sockets/monitoreo-sockets.component';
 
@@ -74,6 +75,7 @@ export class App implements OnInit, OnDestroy {
   private reporteService = inject(ReporteService);
   private authService = inject(AuthService);
   private socketService = inject(SocketService);
+  private pushService = inject(PushService);
   private ngZone = inject(NgZone);
   private destroyRef = inject(DestroyRef);
 
@@ -330,10 +332,14 @@ export class App implements OnInit, OnDestroy {
   private STORAGE_KEY_COMENTARIO = 'reporteComentarioActivoId';
 
   ngOnInit() {
+    this.pushService.init();
     if (this.isAuthenticated()) {
       this.cargarReportes();
       this.conectarSocket();
       this.iniciarPerfil();
+      if (this.notificaciones()) {
+        this.pushService.suscribir();
+      }
     }
   }
 
@@ -393,6 +399,9 @@ export class App implements OnInit, OnDestroy {
         this.cargarReportes();
         this.conectarSocket();
         this.iniciarPerfil();
+        if (this.notificaciones()) {
+          this.pushService.suscribir();
+        }
       },
       error: (err) => {
         this.authLoading.set(false);
@@ -420,6 +429,9 @@ export class App implements OnInit, OnDestroy {
         this.cargarReportes();
         this.conectarSocket();
         this.iniciarPerfil();
+        if (this.notificaciones()) {
+          this.pushService.suscribir();
+        }
       },
       error: (err) => {
         this.authLoading.set(false);
@@ -641,7 +653,13 @@ export class App implements OnInit, OnDestroy {
   }
 
   toggleNotificaciones() {
-    this.notificaciones.update(v => !v);
+    const activar = !this.notificaciones();
+    this.notificaciones.set(activar);
+    if (activar) {
+      this.pushService.suscribir();
+    } else {
+      this.pushService.desuscribir();
+    }
   }
 
   cambiarIdioma(event: Event) {
