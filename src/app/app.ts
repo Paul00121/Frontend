@@ -103,7 +103,7 @@ export class App implements OnInit, OnDestroy {
 
   darkMode = signal(true);
   idioma = signal<'es' | 'en' | 'pt'>('es');
-  notificaciones = signal(true);
+  notificaciones = signal(false);
 
   busqueda = signal('');
 
