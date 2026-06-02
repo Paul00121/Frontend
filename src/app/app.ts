@@ -337,9 +337,6 @@ export class App implements OnInit, OnDestroy {
       this.cargarReportes();
       this.conectarSocket();
       this.iniciarPerfil();
-      if (this.notificaciones()) {
-        this.pushService.suscribir();
-      }
     }
   }
 
@@ -399,9 +396,6 @@ export class App implements OnInit, OnDestroy {
         this.cargarReportes();
         this.conectarSocket();
         this.iniciarPerfil();
-        if (this.notificaciones()) {
-          this.pushService.suscribir();
-        }
       },
       error: (err) => {
         this.authLoading.set(false);
@@ -429,9 +423,6 @@ export class App implements OnInit, OnDestroy {
         this.cargarReportes();
         this.conectarSocket();
         this.iniciarPerfil();
-        if (this.notificaciones()) {
-          this.pushService.suscribir();
-        }
       },
       error: (err) => {
         this.authLoading.set(false);
